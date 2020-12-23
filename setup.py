@@ -11,8 +11,8 @@ def load_requirements(f):
 README = os.path.join(os.path.dirname(__file__), 'README.md')
 
 setup(
-    name="cassava",
-    description="cassava",
+    name="mylib",
+    description="mylib",
     long_description=read_md(README),
     version=VERSION,
     install_requires=load_requirements("./requirements.txt"),
