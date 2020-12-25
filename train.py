@@ -8,7 +8,7 @@ import argparse
 
 # サードパーティライブラリ 
 import numpy
-from mlflow import log_metric, log_param, log_artifact, set_experiment
+from mlflow import log_metric, log_param, log_artifact, set_experiment, set_tag
 from omegaconf import DictConfig, OmegaConf
 import hydra.experimental
 
@@ -28,12 +28,8 @@ TASK = args.task
 
 class Task:
     """各タスクのテンプレートクラス"""
-    def __init__(self, params, catalog):
-        print(OmegaConf.to_yaml(params))
-        print(OmegaConf.to_yaml(catalog))
-
-        self.params = params
-        self.catalog = catalog
+    def __init__(self):
+        pass
     
     def fetch_data(self):
         """学習データ取得: タスクによってパスだけやデータそのものなど分ける"""
@@ -59,7 +55,12 @@ class DataSet:
 
 class Mnist_A(Task):
     def __init__(self, params, catalog):
-        super().__init__(params, catalog)
+        super().__init__()
+        print(OmegaConf.to_yaml(params))
+        print(OmegaConf.to_yaml(catalog))
+        
+        self.params = params.Mnist_A
+        self.catalog = catalog
         self.data = None
         self.dataset = None
 
@@ -85,28 +86,18 @@ class Mnist_A(Task):
         data = self.dataset
         model = models.base_model()
         model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
-        model.fit(data.train_data, data.train_label, epochs=5)
-        test_loss, test_acc = model.evaluate(data.test_data, data.test_label, verbose=1)
-        print(test_acc)
-
-
-# Mnist_Aタスクから継承: 学習データ・前処理は同じで、エポック数だけ5から1に変更したいとする
-class Mnist_B(Mnist_A):
-    def __init__(self, params, catalog):
-        super().__init__(params, catalog)
-
-    def run(self):
-        self.fetch_data()
-        self.preprocessing_train()
-        data = self.dataset
-        model = models.base_model()
-        model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
-        model.fit(data.train_data, data.train_label, epochs=1)
+        model.fit(data.train_data, data.train_label, epochs=self.params.epoch) # epoch 1
         test_loss, test_acc = model.evaluate(data.test_data, data.test_label, verbose=1)
         fname = TASK + ".hdf5"
         model.save(os.path.join(self.catalog.output.model, fname))
         print(test_acc)
 
+
+# Mnist_Aタスクから継承: 学習データ・前処理は同じで、エポック数だけ1から2に変更したいとする
+class Mnist_B(Mnist_A):
+    def __init__(self, params, catalog):
+        super().__init__(params, catalog)
+        self.params = params.Mnist_B # epoch 2
 
 if __name__ == "__main__":
     # Hydraインスタンス生成

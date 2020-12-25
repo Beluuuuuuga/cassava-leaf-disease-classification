@@ -1,0 +1,4 @@
+Mnist_A:
+  epoch: 1
+Mnist_B:
+  epoch: 2
