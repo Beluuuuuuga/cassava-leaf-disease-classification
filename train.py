@@ -5,6 +5,7 @@ import pickle
 import gzip
 import dataclasses
 import argparse
+import tempfile
 
 # サードパーティライブラリ 
 import numpy
@@ -16,6 +17,7 @@ import hydra.experimental
 import data
 from util.fetch_cls_info import show_inheritance as cls_info 
 from util.mlflow import Mlflow 
+from util.plot import plot_history_acc_loss as plot
 import model.mnist as models
 
 
@@ -87,14 +89,24 @@ class Mnist_A(Task):
         data = self.dataset
         model = models.base_model()
         model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
-        model.fit(data.train_data, data.train_label, epochs=self.params.epoch) # epoch 1
+        history = model.fit(data.train_data, data.train_label, epochs=self.params.epoch) # epoch 1
         test_loss, test_acc = model.evaluate(data.test_data, data.test_label, verbose=1)
         fname = TASK + ".hdf5"
         model.save(os.path.join(self.catalog.output.model, fname))
-        print(test_acc)
+
+        # Mlflowで保存
+        EXPERIMENT_NAME = 'mnist_exp'
+        set_experiment(EXPERIMENT_NAME)
+        set_tag("task", TASK)
+        log_param("data", self.catalog.mnist.raw_pkl)
+        log_param("epoch", self.params.epoch)
+        log_param("model name", self.params.model_name)
+        log_metric("test loss", test_loss)
+        log_metric("test acc", test_acc)
+        plot(history)
 
 
-# Mnist_Aタスクから継承: 学習データ・前処理は同じで、エポック数だけ1から2に変更したいとする
+# Mnist_Aタスクから継承: 学習データ・前処理は同じで、エポック数だけ1から5に変更したいとする
 class Mnist_B(Mnist_A):
     def __init__(self, params, catalog):
         super().__init__(params, catalog)
