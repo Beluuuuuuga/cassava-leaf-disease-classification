@@ -28,5 +28,5 @@ setup(
     long_description=read_md(README),
     version=1.0,
     install_requires=load_requirements("./requirements.txt"),
-    packages=find_packages(exclude=('nobtebook'))
+    packages=find_packages(exclude=('nobtebook','reference'))
 )
