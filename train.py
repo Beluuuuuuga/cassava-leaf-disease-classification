@@ -14,7 +14,8 @@ import hydra.experimental
 
 # 自作パッケージ
 import data
-import util.fetch_cls_info as cls_info
+from util.fetch_cls_info import show_inheritance as cls_info 
+from util.mlflow import Mlflow 
 import model.mnist as models
 
 
@@ -99,6 +100,7 @@ class Mnist_B(Mnist_A):
         super().__init__(params, catalog)
         self.params = params.Mnist_B # epoch 2
 
+
 if __name__ == "__main__":
     # Hydraインスタンス生成
     hydra.experimental.initialize(config_path="config", job_name="train_mnist")
@@ -110,6 +112,6 @@ if __name__ == "__main__":
 
     # 文字列からクラスインスタンスを生成
     cls = globals()[TASK]
-    cls_info.show_inheritance(cls) # タスクの継承関係
+    cls_info(cls) # タスクの継承関係
     instance = cls(params, catalog)
     instance.run() # 学習実行
