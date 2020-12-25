@@ -4,6 +4,7 @@ import sys
 import pickle
 import gzip
 import dataclasses
+import argparse
 
 # サードパーティライブラリ 
 import numpy
@@ -18,6 +19,11 @@ import model.mnist as models
 
 
 DATAPATH = data.__path__[0] # パッケージのパスとして取得
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--task', default='Mnist_A', help='Task(Class) Name')
+args = parser.parse_args()
+TASK = args.task
 
 
 class Task:
@@ -97,8 +103,8 @@ class Mnist_B(Mnist_A):
         model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
         model.fit(data.train_data, data.train_label, epochs=1)
         test_loss, test_acc = model.evaluate(data.test_data, data.test_label, verbose=1)
-
-        model.save(os.path.join(self.catalog.output.model,"mnist_b.hdf5"))
+        fname = TASK + ".hdf5"
+        model.save(os.path.join(self.catalog.output.model, fname))
         print(test_acc)
 
 
@@ -112,7 +118,7 @@ if __name__ == "__main__":
     models.set_randvalue(42)
 
     # 文字列からクラスインスタンスを生成
-    cls = globals()['Mnist_B']
+    cls = globals()[TASK]
     cls_info.show_inheritance(cls) # タスクの継承関係
     instance = cls(params, catalog)
     instance.run() # 学習実行
