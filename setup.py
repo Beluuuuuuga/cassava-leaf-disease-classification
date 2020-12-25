@@ -23,8 +23,8 @@ except ImportError:
 README = os.path.join(os.path.dirname(__file__), 'README.md')
 
 setup(
-    name="mylib",
-    description="mylib",
+    name="shackdoo",
+    description="shackdoo",
     long_description=read_md(README),
     version=1.0,
     install_requires=load_requirements("./requirements.txt"),
