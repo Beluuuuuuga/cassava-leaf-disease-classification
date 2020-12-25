@@ -1,0 +1,6 @@
+Mnist_A:
+  epoch: 1
+  model_name: base_model
+Mnist_B:
+  epoch: 5
+  model_name: base_model

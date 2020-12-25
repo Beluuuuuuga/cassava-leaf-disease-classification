@@ -1,0 +1,5 @@
+hydra-core
+mlflow
+numpy
+matplotlib
+tensorflow-gpu >= 2.0.0
