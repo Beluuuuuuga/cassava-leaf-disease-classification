@@ -1,0 +1,5 @@
+mnist:
+  raw_pkl: raw/mnist.pkl.gz
+
+output:
+  model: data/model
