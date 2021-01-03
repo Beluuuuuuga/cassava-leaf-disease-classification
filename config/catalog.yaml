@@ -1,5 +1,8 @@
 mnist:
   raw_pkl: raw/mnist.pkl.gz
+cassava:
+  train_imgs: raw/train_images
+  train_csv: raw/train.csv
 
 output:
   model: data/model

@@ -4,3 +4,8 @@ Mnist_A:
 Mnist_B:
   epoch: 5
   model_name: base_model
+Cassava_A:
+  epoch: 20
+  batch: 8
+  size: 512
+  model_name: effisient_b0_2
