@@ -16,7 +16,6 @@ import hydra.experimental
 # 自作パッケージ
 import data
 from util.fetch_cls_info import show_inheritance as cls_info 
-from util.mlflow import Mlflow 
 from util.plot import plot_history_acc_loss as plot
 import model.mnist as models
 
