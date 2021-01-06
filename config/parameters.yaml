@@ -8,4 +8,5 @@ Cassava_A:
   epoch: 20
   batch: 8
   size: 512
+  lrate: 0.001
   model_name: effisient_b0_2
