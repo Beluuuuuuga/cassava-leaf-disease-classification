@@ -22,14 +22,15 @@ import tensorflow as tf
 # from tensorflow.keras.preprocessing import image
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.preprocessing.image import DataFrameIterator
-# from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 # from tensorflow.keras.applications import EfficientNetB0
-# from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 
 # 自作パッケージ
 import data
 from util.fetch_cls_info import show_inheritance as cls_info 
 from util.plot import plot_history_acc_loss as plot
+from util.plot import plot_history_acc_loss_2 as plot2
 import model.mnist as models
 import model.cassava as cassava_models # キャッサバコンペ用のモデル
 
@@ -142,6 +143,7 @@ class Cassava_A(Task):
         self.params = params.Cassava_A
         self.catalog = catalog
         self.data = None
+        self.labels_len = None
         self.dataset = None
 
     def fetch_data(self):
@@ -151,6 +153,7 @@ class Cassava_A(Task):
 
         train_img_path = self.catalog.cassava.train_imgs
         train_img_full_path = os.path.join(DATAPATH, train_img_path)
+        self.labels_len = len(train_labels)
         return train_labels, train_img_full_path
 
     def preprocessing_train(self):
@@ -192,7 +195,62 @@ class Cassava_A(Task):
 
     def run(self):
         self.preprocessing_train()
+        data = self.dataset
+        params = self.params
+        model = cassava_models.efficient_b0_2(params.size)
+        
+        input_model_path = os.path.join(DATAPATH, self.catalog.model.efficient_b0_imagenet)
+        output_model_path = os.path.join(DATAPATH, self.catalog.model.efficient_b0)
+        output_best_model_path = os.path.join(DATAPATH, self.catalog.model.efficient_b0_best)
+        
+        model.load_weights(input_model_path)
+        model.compile(optimizer = Adam(lr = params.lrate),
+                  loss = "sparse_categorical_crossentropy",
+                  metrics = ["acc"])
 
+        model_save = ModelCheckpoint(output_best_model_path, 
+                             save_best_only = True, 
+                             save_weights_only = True,
+                             monitor = 'val_loss', 
+                             mode = 'min', verbose = 1)
+        early_stop = EarlyStopping(monitor = 'val_loss', min_delta = 0.001, 
+                           patience = 5, mode = 'min', verbose = 1,
+                           restore_best_weights = True)
+        reduce_lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.3, 
+                              patience = 2, min_delta = 0.001, 
+                              mode = 'min', verbose = 1)
+
+        history = model.fit(
+            data.train_generator,
+            steps_per_epoch = (self.labels_len*0.8 / params.batch),
+            epochs = params.epoch,
+            validation_data = data.valid_generator,
+            validation_steps = (self.labels_len*0.2 / params.batch),
+            callbacks = [model_save, early_stop, reduce_lr]
+        )
+
+        model.save(output_model_path)
+
+        # Mlflowで保存
+        EXPERIMENT_NAME = 'CassavaMaksym'
+        set_experiment(EXPERIMENT_NAME)
+        set_tag("task", TASK)
+        log_param("data", self.catalog.cassava.train_imgs)
+        log_param("epoch", self.params.epoch)
+        log_param("model name", self.params.model_name)
+
+        # print(history.history) # for debug
+
+        loss = history.history['loss'][0]
+        val_loss = history.history['val_loss'][0]
+        log_metric("loss", loss)
+        log_metric("val_loss", val_loss)
+
+        acc = history.history['acc'][0]
+        val_acc = history.history['val_acc'][0]
+        log_metric("acc", acc)
+        log_metric("val_acc", val_acc)
+        plot2(history)
 
 if __name__ == "__main__":
     # Hydraインスタンス生成
