@@ -6,3 +6,8 @@ cassava:
 
 output:
   model: data/model
+    
+model: 
+  efficient_b0_imagenet: model/basic_EfNetB0_imagenet_512.h5
+  efficient_b0: model/EffNetB0_512_8.h5
+  efficient_b0_best: model/EffNetB0_512_8_best_weights.h5
