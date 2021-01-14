@@ -3,6 +3,7 @@ mnist:
 cassava:
   train_imgs: raw/train_images
   train_csv: raw/train.csv
+  label_json: raw/label_num_to_disease_map.json
 
 output:
   model: data/model
